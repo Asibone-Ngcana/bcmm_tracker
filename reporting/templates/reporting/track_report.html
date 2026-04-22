@@ -1,0 +1,291 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Track Report {{ ref_id }} | BCMM Tracker{% endblock %}
+
+{% block extra_head %}
+<style>
+    .page-header {
+        margin-bottom: 2rem;
+    }
+
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        color: var(--accent);
+        text-decoration: none;
+        font-size: 0.875rem;
+        font-weight: 500;
+        margin-bottom: 1rem;
+        transition: var(--transition);
+    }
+
+    .back-link:hover { opacity: 0.8; }
+
+    .page-header h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        letter-spacing: -0.03em;
+    }
+
+    .tracking-card {
+        max-width: 680px;
+        margin: 0 auto;
+    }
+
+    /* Status badge */
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1.1rem;
+        border-radius: 99px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        background: rgba(16, 185, 129, 0.15);
+        color: #10b981;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+        margin-bottom: 2rem;
+    }
+
+    .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #10b981;
+        box-shadow: 0 0 8px #10b981;
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50%       { opacity: 0.4; }
+    }
+
+    /* Ref ID header */
+    .ref-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .ref-id {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        margin-bottom: 0.25rem;
+    }
+
+    .ref-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--accent);
+        letter-spacing: -0.02em;
+    }
+
+    /* Detail grid */
+    .detail-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.25rem;
+        margin-bottom: 2rem;
+    }
+
+    .detail-item {
+        background: rgba(255,255,255,0.03);
+        border: 1px solid var(--glass-border);
+        border-radius: 14px;
+        padding: 1.1rem 1.25rem;
+    }
+
+    .detail-label {
+        font-size: 0.72rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-bottom: 0.4rem;
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+    }
+
+    .detail-value {
+        font-weight: 600;
+        font-size: 0.95rem;
+        color: var(--text-main);
+    }
+
+    /* Timeline */
+    .timeline-section {
+        margin-top: 0.5rem;
+    }
+
+    .timeline-title {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-bottom: 1.25rem;
+    }
+
+    .timeline {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .timeline-step {
+        display: flex;
+        gap: 1rem;
+        align-items: flex-start;
+        position: relative;
+    }
+
+    .timeline-step:not(:last-child)::after {
+        content: '';
+        position: absolute;
+        left: 11px;
+        top: 26px;
+        width: 2px;
+        height: calc(100% + 0px);
+        background: var(--glass-border);
+    }
+
+    .step-icon {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        font-size: 0.65rem;
+        margin-top: 2px;
+    }
+
+    .step-icon.done {
+        background: rgba(16, 185, 129, 0.2);
+        border: 2px solid #10b981;
+        color: #10b981;
+    }
+
+    .step-icon.active {
+        background: rgba(59, 130, 246, 0.2);
+        border: 2px solid var(--accent);
+        color: var(--accent);
+    }
+
+    .step-icon.pending {
+        background: rgba(255,255,255,0.04);
+        border: 2px solid var(--glass-border);
+        color: var(--text-muted);
+    }
+
+    .step-body {
+        padding-bottom: 1.5rem;
+        flex: 1;
+    }
+
+    .step-label {
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: var(--text-main);
+    }
+
+    .step-label.pending { color: var(--text-muted); }
+
+    .step-time {
+        font-size: 0.78rem;
+        color: var(--text-muted);
+        margin-top: 0.15rem;
+    }
+
+    @media (max-width: 600px) {
+        .detail-grid { grid-template-columns: 1fr; }
+        .ref-header { flex-direction: column; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <a href="/" class="back-link">
+        <i class="bi bi-arrow-left"></i> Back to Dashboard
+    </a>
+    <h1>Report Tracking</h1>
+</div>
+
+<div class="tracking-card glass-card">
+    <div class="ref-header">
+        <div>
+            <div class="ref-id">Reference Number</div>
+            <div class="ref-value">{{ ref_id }}</div>
+        </div>
+        <div class="status-badge">
+            <span class="status-dot"></span>
+            {{ status }}
+        </div>
+    </div>
+
+    <div class="detail-grid">
+        <div class="detail-item">
+            <div class="detail-label"><i class="bi bi-tag-fill"></i> Category</div>
+            <div class="detail-value">{{ category }}</div>
+        </div>
+        <div class="detail-item">
+            <div class="detail-label"><i class="bi bi-geo-alt-fill"></i> Location</div>
+            <div class="detail-value">{{ location }}</div>
+        </div>
+        <div class="detail-item">
+            <div class="detail-label"><i class="bi bi-calendar3"></i> Reported On</div>
+            <div class="detail-value">{{ reported_on }}</div>
+        </div>
+        <div class="detail-item">
+            <div class="detail-label"><i class="bi bi-people-fill"></i> Assigned To</div>
+            <div class="detail-value">{{ assigned_to }}</div>
+        </div>
+    </div>
+
+    <!-- Progress timeline -->
+    <div class="timeline-section">
+        <div class="timeline-title">Progress Timeline</div>
+        <div class="timeline">
+            <div class="timeline-step">
+                <div class="step-icon done"><i class="bi bi-check-lg"></i></div>
+                <div class="step-body">
+                    <div class="step-label">Report Received</div>
+                    <div class="step-time">Oct 24, 2023 · 14:30</div>
+                </div>
+            </div>
+            <div class="timeline-step">
+                <div class="step-icon done"><i class="bi bi-check-lg"></i></div>
+                <div class="step-body">
+                    <div class="step-label">Assigned to Field Team</div>
+                    <div class="step-time">Oct 24, 2023 · 16:00</div>
+                </div>
+            </div>
+            <div class="timeline-step">
+                <div class="step-icon active"><i class="bi bi-tools"></i></div>
+                <div class="step-body">
+                    <div class="step-label">Work In Progress</div>
+                    <div class="step-time">Oct 25, 2023 · 08:00</div>
+                </div>
+            </div>
+            <div class="timeline-step">
+                <div class="step-icon pending"><i class="bi bi-circle"></i></div>
+                <div class="step-body">
+                    <div class="step-label pending">Resolved &amp; Closed</div>
+                    <div class="step-time">Pending</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
